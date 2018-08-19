@@ -3,8 +3,12 @@ class User < ApplicationRecord
 
   has_many :ownerships
   has_many :items, through: :ownerships
+  
   has_many :wants
   has_many :want_items, through: :wants, class_name: 'Item', source: :item
+  
+  has_many :haves, class_name: "Have"
+  has_many :have_items, through: :haves, class_name: "Item", source: :item
 
   validates :name, presence: true, length: { maximum: 50 }
   validates :email, presence: true, length: { maximum: 255 },
@@ -22,6 +26,20 @@ class User < ApplicationRecord
 
   def want?(item) #既にwantしているかどうかを調べる
     self.want_items.include?(item)
+  end
+
+
+  def have(item)
+    self.haves.find_or_create_by(item_id: item.id)
+  end
+
+  def unhave(item)
+    have = self.haves.find_by(item_id: item.id)
+    have.destroy if have
+  end
+
+  def have?(item)
+    self.have_items.include?(item)
   end
 
   has_secure_password
